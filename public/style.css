@@ -1,3 +1,11 @@
+:root {
+  color-scheme: dark;
+}
+body {
+  background-color: white;
+  color: black;
+}
+
 .cell {
   width: 75px;
   height: 75px;
@@ -19,4 +27,19 @@
   grid-template-columns: repeat(3, auto);
   width: 225px;
   margin: auto;
+}
+#restartBtn {
+  padding: 8px 22px;
+}
+/*
+DARK MODE
+*/
+
+i {
+  font-size: 50px;
+  cursor: pointer;
+  /* position: absolute;
+  top: 50%;
+  left: 50%; */
+  transform: translate(-50%, -50%);
 }

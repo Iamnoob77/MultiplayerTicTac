@@ -1,3 +1,5 @@
+var socket = io();
+
 const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
 const restartBtn = document.querySelector("#restartBtn");
@@ -32,6 +34,8 @@ function cellClicked() {
   }
   updateCell(this, cellIndex);
   checkWinner();
+  //*SEND DATA TO SERVER
+  socket.emit("dataChanged", options);
 }
 function updateCell(cell, index) {
   options[index] = currentPlayer;
@@ -76,3 +80,13 @@ function restartGame() {
   });
   running = true;
 }
+
+//*NETWORKING
+let clientRoom;
+let userName;
+
+socket.on("serverMsg", (data) => {
+  console.log(`I am client no.${data.clientNo}`);
+  console.log(`I should be in room no.${data.roomNo}`);
+  clientRoom = data.roomNo;
+});
