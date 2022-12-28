@@ -1,92 +1,121 @@
 var socket = io();
 
+//* START :- GETTING HTML CONTENT
+const gameAndMessage = document.getElementById("gameAndMessage");
+const initialScreen = document.getElementById("initialScreen");
+const newGameBtn = document.getElementById("newGameButton");
+const joinGameBtn = document.getElementById("joinGameButton");
+const gameCodeInput = document.getElementById("gameCodeInput");
+const gameCodeDisplay = document.getElementById("gameCodeDisplay");
+const playerN = document.getElementById("playerNumber");
 const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
 const restartBtn = document.querySelector("#restartBtn");
-const winConditions = [
-  [0, 1, 2],
-  [3, 4, 5],
-  [6, 7, 8],
-  [0, 3, 6],
-  [1, 4, 7],
-  [2, 5, 8],
-  [0, 4, 8],
-  [2, 4, 6],
-];
+//* END :- GETTING HTML CONTENT
 
-let options = ["", "", "", "", "", "", "", "", ""];
-let currentPlayer = "X";
-let running = false;
+//* START :- SOCKETS
+socket.on("init", handleInit);
 
-initializeGame();
+socket.on("gameCode", handleGameCode);
+socket.on("unknownCode", handleUnknownCode);
+socket.on("tooManyPlayers", handleTooManyPlayers);
+socket.on("drawXorO", handleDrawXorO);
+socket.on("changePlayer", handleChangePlayer);
+socket.on("playerCount", handlePlayerCount);
+socket.on("gameRestarted", handleGameRestarted);
+socket.on("stillRunning", handleStillRunning);
+//* END :- SOCKETS
+
+//* START :- LISTENERS
+newGameBtn.addEventListener("click", newGame);
+joinGameBtn.addEventListener("click", joinGame);
+//* END :- LISTENERS
+
+//?------------START OF GAME DECLARATION ---------------
+
+let playerTurn = true;
+let roomName;
+
+//?-------------END OF GAME DECLARATION----------
+
+//* START :- GAME LOGIC
+function newGame() {
+  socket.emit("newGame");
+  initializeGame();
+}
+function joinGame() {
+  const code = gameCodeInput.value;
+  console.log(code);
+  if (code !== "") {
+    socket.emit("joinGame", code);
+    initializeGame();
+  } else {
+    alert("Please Enter Game Code");
+  }
+}
+let playerNumber;
 function initializeGame() {
+  initialScreen.style.display = "none";
+  gameAndMessage.style.display = "flex";
+  playerN.style.display = "block";
   cells.forEach((cell) => {
     cell.addEventListener("click", cellClicked);
   });
   restartBtn.addEventListener("click", restartGame);
-  statusText.textContent = `${currentPlayer}'s turn`;
-  running = true;
 }
 function cellClicked() {
+  console.log(socket.id);
   const cellIndex = this.getAttribute("cellIndex");
-  if (options[cellIndex] != "" || !running) {
-    return;
-  }
-  updateCell(this, cellIndex);
-  checkWinner();
-  //*SEND DATA TO SERVER
-  socket.emit("dataChanged", options);
-}
-function updateCell(cell, index) {
-  options[index] = currentPlayer;
-  cell.textContent = currentPlayer;
-}
-function changePlayer() {
-  currentPlayer = currentPlayer == "X" ? "O" : "X";
-  statusText.textContent = `${currentPlayer}'s turn`;
-}
-function checkWinner() {
-  let roundWon = false;
-  for (let i = 0; i < winConditions.length; i++) {
-    const condition = winConditions[i];
-    const cellA = options[condition[0]];
-    const cellB = options[condition[1]];
-    const cellC = options[condition[2]];
 
-    if (cellA == "" || cellB == "" || cellC == "") {
-      continue;
-    }
-    if (cellA == cellB && cellB == cellC) {
-      roundWon = true;
-      break;
-    }
-  }
-  if (roundWon) {
-    statusText.textContent = `${currentPlayer} wins!`;
-    running = false;
-  } else if (!options.includes("")) {
-    statusText.textContent = "Draw!";
-    running = false;
-  } else {
-    changePlayer();
-  }
+  console.log(cellIndex);
+  if (playerTurn) socket.emit("cellClicked", cellIndex);
 }
+
 function restartGame() {
-  currentPlayer = "X";
-  options = ["", "", "", "", "", "", "", "", ""];
-  statusText.textContent = `${currentPlayer}'s turn`;
-  cells.forEach((cell) => {
-    cell.textContent = "";
-  });
-  running = true;
+  socket.emit("restartGame", roomName);
 }
+function handleGameRestarted(data) {
+  console.log("restarted", data);
+  for (let i = 0; i < data.options.length; i++) {
+    cells[i].textContent = data.options[i];
+  }
+  playerTurn = true;
+  initializeGame();
+}
+
+function handleStillRunning() {
+  console.log("permission");
+  alert("Game is still Running");
+}
+//* END :- GAME LOGIC
 
 //*NETWORKING
-let clientRoom;
-let userName;
+function handleInit(number) {
+  playerNumber = number;
+}
 
-socket.on("serverMsg", (data) => {
-  console.log(`I am client no.${data.clientNo}`);
-  console.log(`I should be in room no.${data.roomNo}`);
-  clientRoom = data.roomNo;
-});
+function handleGameCode(gameCode) {
+  roomName = gameCode;
+  gameCodeDisplay.innerText = `room name: ${gameCode}`;
+}
+function handleUnknownCode() {
+  restartGame();
+  alert("Unknown code");
+}
+function handleTooManyPlayers() {
+  restartGame();
+  alert("This game is already in progress");
+}
+function handleDrawXorO(data) {
+  playerTurn = data.playerTurn;
+
+  for (let i = 0; i < data.options.length; i++) {
+    cells[i].textContent = data.options[i];
+  }
+}
+function handleChangePlayer(currentPlayer) {
+  statusText.textContent = `${currentPlayer}`;
+}
+function handlePlayerCount(playNum) {
+  playerN.textContent = `Total Players: ${playNum}`;
+}
