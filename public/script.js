@@ -11,6 +11,10 @@ const playerN = document.getElementById("playerNumber");
 const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
 const restartBtn = document.querySelector("#restartBtn");
+const chatForm = document.getElementById("chat-form");
+const inputMessage = document.querySelector("#inputMessage");
+const sendBtn = document.getElementById("sendBtn");
+const chatMessages = document.getElementById("chat-messages");
 //* END :- GETTING HTML CONTENT
 
 //* START :- SOCKETS
@@ -21,14 +25,29 @@ socket.on("unknownCode", handleUnknownCode);
 socket.on("tooManyPlayers", handleTooManyPlayers);
 socket.on("drawXorO", handleDrawXorO);
 socket.on("changePlayer", handleChangePlayer);
-socket.on("playerCount", handlePlayerCount);
 socket.on("gameRestarted", handleGameRestarted);
 socket.on("stillRunning", handleStillRunning);
+
+//message from server
+socket.on("message", handleMessage);
 //* END :- SOCKETS
 
 //* START :- LISTENERS
 newGameBtn.addEventListener("click", newGame);
 joinGameBtn.addEventListener("click", joinGame);
+chatForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const msg = inputMessage.value.trim();
+
+  if (!msg) {
+    return false;
+  }
+  //send message to server
+  outputMessage({ sender: "You", msg });
+  socket.emit("chatMessage", msg);
+  inputMessage.value = "";
+  inputMessage.focus();
+});
 //* END :- LISTENERS
 
 //?------------START OF GAME DECLARATION ---------------
@@ -118,4 +137,49 @@ function handleChangePlayer(currentPlayer) {
 }
 function handlePlayerCount(playNum) {
   playerN.textContent = `Total Players: ${playNum}`;
+}
+//message from server
+function handleMessage(data) {
+  console.log(data);
+  outputMessage(data);
+  //scroll down
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+//* END :- NETWORKING
+//output message to DOM
+function outputMessage(data) {
+  const div = document.createElement("div");
+  const p = document.createElement("p");
+  const spanName = document.createElement("span");
+  const spanMessage = document.createElement("span");
+
+  spanMessage.classList.add("spanMessage");
+  p.classList.add("meta");
+
+  spanName.style.fontSize = "1.2rem";
+  spanName.style.fontWeight = "bold";
+  p.style.marginBottom = "0.5rem";
+  if (data.sender === "You") {
+    spanName.innerText = "You: ";
+    spanName.style.color = "blue";
+  } else if (data.sender === "Opponent") {
+    spanName.innerText = "Opponent: ";
+    spanName.style.color = "orange";
+  } else if (data.sender === "playerConnection") {
+    spanName.innerText = "Server: ";
+    if (data.msg === "New Player Joined!") {
+      handlePlayerCount(2);
+      spanMessage.style.color = "green";
+    } else {
+      handlePlayerCount(1);
+      spanMessage.style.color = "red";
+    }
+    spanMessage.style.fontStyle = "italic";
+  }
+  spanMessage.innerHTML = `${data.msg}`;
+  p.appendChild(spanName);
+  p.appendChild(spanMessage);
+  div.appendChild(p);
+
+  chatMessages.appendChild(div);
 }

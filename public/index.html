@@ -68,7 +68,18 @@
         <h4><span id="gameCodeDisplay"></span></h4>
       </div>
       <div id="chatSection">
-        <input type="text" id="message" placeholder="send message" />
+        <div id="chat-messages">
+          <div></div>
+        </div>
+        <form id="chat-form">
+          <input
+            type="text"
+            id="inputMessage"
+            placeholder="send message"
+            required
+          />
+          <button id="sendBtn">Send</button>
+        </form>
       </div>
       <button class="btn-danger" id="leaveBtn">Leave</button>
     </section>

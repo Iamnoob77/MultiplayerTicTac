@@ -42,11 +42,31 @@ io.on("connection", connected);
 //* START :- NETWORKING
 function connected(socket) {
   console.log("Client Connected with id ", socket.id);
+  socket.on("disconnect", handleDisconnect);
 
   socket.on("cellClicked", handleCellClicked);
   socket.on("newGame", handleNewGame);
   socket.on("joinGame", handleJoinGame);
   socket.on("restartGame", handleRestartGame);
+
+  socket.on("chatMessage", handleChatMessage);
+
+  function handleDisconnect() {
+    // console.log("Client Disconnected with id ", socket.id);
+    if (clientRooms[socket.id]) {
+      socket.broadcast
+        .to(clientRooms[socket.id])
+        .emit("message", { sender: "playerConnection", msg: "Opponent Left" });
+      socket.leave(clientRooms[socket.id]);
+    }
+  }
+  function handleChatMessage(data) {
+    //check if there are two players or not
+
+    socket.broadcast
+      .to(clientRooms[socket.id])
+      .emit("message", { sender: "Opponent", msg: data });
+  }
   function handleCellClicked(cellIndex) {
     // console.log(cellIndex);
     console.log(running);
@@ -80,7 +100,10 @@ function connected(socket) {
     socket.join(roomName);
     socket.number = 2;
     player2 = socket.id;
-    io.in(roomName).emit("playerCount", 2);
+    socket.in(roomName).emit("message", {
+      sender: "playerConnection",
+      msg: "New Player Joined!",
+    });
     running = true;
   }
 
