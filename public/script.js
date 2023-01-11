@@ -17,6 +17,7 @@ const sendBtn = document.getElementById("sendBtn");
 const chatMessages = document.getElementById("chat-messages");
 //* END :- GETTING HTML CONTENT
 
+let errorCame = false; //?CHECK IF THERE IS ANY ERROR
 //* START :- SOCKETS
 socket.on("init", handleInit);
 
@@ -60,17 +61,18 @@ let roomName;
 //* START :- GAME LOGIC
 function newGame() {
   socket.emit("newGame");
-  initializeGame();
+  // initializeGame();
+  console.log("h", socket.id);
 }
 function joinGame() {
   const code = gameCodeInput.value;
   console.log(code);
   if (code !== "") {
     socket.emit("joinGame", code);
-    initializeGame();
   } else {
     alert("Please Enter Game Code");
   }
+  console.log(socket.id);
 }
 let playerNumber;
 function initializeGame() {
@@ -109,8 +111,9 @@ function handleStillRunning() {
 //* END :- GAME LOGIC
 
 //*NETWORKING
-function handleInit(number) {
-  playerNumber = number;
+function handleInit(noError) {
+  errorCame = noError;
+  initializeGame();
 }
 
 function handleGameCode(gameCode) {
@@ -118,12 +121,13 @@ function handleGameCode(gameCode) {
   gameCodeDisplay.innerText = `room name: ${gameCode}`;
 }
 function handleUnknownCode() {
-  restartGame();
   alert("Unknown code");
+  // restartGame();
+  return;
 }
 function handleTooManyPlayers() {
-  restartGame();
   alert("This game is already in progress");
+  // restartGame();
 }
 function handleDrawXorO(data) {
   playerTurn = data.playerTurn;
@@ -131,6 +135,7 @@ function handleDrawXorO(data) {
   for (let i = 0; i < data.options.length; i++) {
     cells[i].textContent = data.options[i];
   }
+  console.log(data.playerTurn);
 }
 function handleChangePlayer(currentPlayer) {
   statusText.textContent = `${currentPlayer}`;
