@@ -10,14 +10,18 @@ const gameCodeDisplay = document.getElementById("gameCodeDisplay");
 const playerN = document.getElementById("playerNumber");
 const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
-const restartBtn = document.querySelector("#restartBtn");
+// const restartBtn = document.querySelector("#restartBtn");
+
 const chatForm = document.getElementById("chat-form");
 const inputMessage = document.querySelector("#inputMessage");
 const sendBtn = document.getElementById("sendBtn");
 const chatMessages = document.getElementById("chat-messages");
+
+const alert = document.getElementById("customAlert");
+const restartBtn = document.getElementById("restartBtn");
+
 //* END :- GETTING HTML CONTENT
 
-let errorCame = false; //?CHECK IF THERE IS ANY ERROR
 //* START :- SOCKETS
 socket.on("init", handleInit);
 
@@ -28,7 +32,7 @@ socket.on("drawXorO", handleDrawXorO);
 socket.on("changePlayer", handleChangePlayer);
 socket.on("gameRestarted", handleGameRestarted);
 socket.on("stillRunning", handleStillRunning);
-
+socket.on("gameOver", handleGameOver);
 //message from server
 socket.on("message", handleMessage);
 //* END :- SOCKETS
@@ -82,7 +86,7 @@ function initializeGame() {
   cells.forEach((cell) => {
     cell.addEventListener("click", cellClicked);
   });
-  restartBtn.addEventListener("click", restartGame);
+  // restartBtn.addEventListener("click", restartGame);
 }
 function cellClicked() {
   console.log(socket.id);
@@ -93,7 +97,7 @@ function cellClicked() {
 }
 
 function restartGame() {
-  socket.emit("restartGame", roomName);
+  // socket.emit("restartGame", roomName);
 }
 function handleGameRestarted(data) {
   console.log("restarted", data);
@@ -111,8 +115,7 @@ function handleStillRunning() {
 //* END :- GAME LOGIC
 
 //*NETWORKING
-function handleInit(noError) {
-  errorCame = noError;
+function handleInit() {
   initializeGame();
 }
 
@@ -149,6 +152,9 @@ function handleMessage(data) {
   outputMessage(data);
   //scroll down
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function handleGameOver(data) {
+  showGameOverAlert(data);
 }
 //* END :- NETWORKING
 //output message to DOM
@@ -188,3 +194,18 @@ function outputMessage(data) {
 
   chatMessages.appendChild(div);
 }
+
+// POP UP
+function showGameOverAlert(message) {
+  const alertMessage = document.getElementById("gameOverMessage");
+  const overlay = document.getElementById("overlay");
+  alertMessage.innerText = message;
+  alert.style.display = "block";
+  alert.classList.add("animate__animated", "animate__backInDown");
+  overlay.style.display = "block";
+}
+restartBtn.addEventListener("click", () => {
+  alert.style.display = "none";
+  overlay.style.display = "none";
+  restartGame();
+});

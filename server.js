@@ -68,7 +68,7 @@ function connected(socket) {
     if (!gameStates[roomName]) {
       gameStates[roomName] = createNewGame();
     }
-    socket.emit("init", false);
+    socket.emit("init");
   }
   function handleJoinGame(roomName) {
     // socket.emit("gameCode", roomName);
@@ -98,7 +98,7 @@ function connected(socket) {
       msg: "New Player Joined!",
     });
     socket.emit("gameCode", roomName);
-    socket.emit("init", false);
+    socket.emit("init");
     gameStates[roomName].running = true;
 
     // running = true;
@@ -120,10 +120,10 @@ function connected(socket) {
   function handleRestartGame() {
     let roomName = clientRooms[socket.id];
 
-    if (gameStates[roomName].running) {
-      socket.emit("stillRunning");
-      return;
-    }
+    // if (gameStates[roomName].running) {
+    //   socket.emit("stillRunning");
+    //   return;
+    // }
 
     gameStates[roomName].options = ["", "", "", "", "", "", "", "", ""];
     gameStates[roomName].currentPlayer = "X";
@@ -187,12 +187,12 @@ function connected(socket) {
     }
     if (roundWon) {
       io.in(roomName).emit(
-        "changePlayer",
-        gameStates[roomName].currentPlayer + " wins!"
+        "gameOver",
+        gameStates[roomName].currentPlayer + " Won!"
       );
       gameStates[roomName].running = false;
     } else if (!options.includes("")) {
-      io.in(roomName).emit("changePlayer", "Draw!");
+      io.in(roomName).emit("gameOver", "Draw!");
       gameStates[roomName].running = false;
     } else {
       changePlayer();
