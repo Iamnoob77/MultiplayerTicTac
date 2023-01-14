@@ -17,13 +17,15 @@ body {
 }
 
 .cell {
-  width: 125px;
-  height: 125px;
+  width: 130px;
+  height: 130px;
   border: 1px solid black;
   box-shadow: 0 0 0 2px;
   line-height: 100px;
   font-size: 65px;
   cursor: pointer;
+  text-align: center;
+  padding: 10px;
 }
 /* Todo
 1.change cursor
@@ -48,18 +50,21 @@ body {
 #cellContainer {
   display: grid;
   grid-template-columns: repeat(3, auto);
-  width: 40%;
-  border: 2px solid green;
+  width: auto;
+  /* border: 2px solid red; */
   /* margin: auto; */
 }
-
+#statusText {
+  margin-top: 16px;
+  font-size: 1.5rem;
+}
 /*
 CHAT SECTION
 */
 #gameAndMessage {
   display: none;
   justify-content: space-between;
-  border: 2px solid green;
+  border: 3px solid red;
   position: relative;
 }
 #chatSection {
@@ -126,7 +131,7 @@ POP UP
 #customAlert {
   position: fixed;
   top: 36%;
-  left: 19%;
+  left: 18%;
   width: 20%;
   height: 25%;
   transform: translate(-50%, -50%);

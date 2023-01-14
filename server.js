@@ -3,6 +3,7 @@ const socket = require("socket.io");
 const makeid = require("./utils");
 const http = require("http");
 const { Server } = require("socket.io");
+const { copyFileSync } = require("fs");
 
 //* APP SETUP
 const app = express();
@@ -10,11 +11,9 @@ const server = http.createServer(app);
 /*
 ------------DECLARATION----------
 */
-// let currentPlayer = "X";
-// let running = false;
+
 const gameStates = {};
 const clientRooms = {};
-// let options = ["", "", "", "", "", "", "", "", ""];
 const winConditions = [
   [0, 1, 2],
   [3, 4, 5],
@@ -51,11 +50,20 @@ function connected(socket) {
   socket.on("chatMessage", handleChatMessage);
 
   function handleDisconnect() {
+    let roomName = clientRooms[socket.id];
+    let room = io.sockets.adapter.rooms.get(roomName);
     if (clientRooms[socket.id]) {
-      socket.broadcast
-        .to(clientRooms[socket.id])
-        .emit("message", { sender: "playerConnection", msg: "Opponent Left" });
-      socket.leave(clientRooms[socket.id]);
+      if (room && room.size === 1) {
+        socket.broadcast.to(clientRooms[socket.id]).emit("message", {
+          sender: "playerConnection",
+          msg: "Opponent Left",
+        });
+        socket.leave(clientRooms[socket.id]);
+        delete clientRooms[socket.id];
+      } else {
+        delete clientRooms[socket.id];
+        delete gameStates[clientRooms[socket.id]];
+      }
     }
   }
   function handleNewGame() {
@@ -63,15 +71,13 @@ function connected(socket) {
     clientRooms[socket.id] = roomName;
     socket.emit("gameCode", roomName); //send game code to client
     socket.join(roomName);
-    // socket.number = 1;
-    // socket.to(roomName).emit("init", 1); //TODO
+
     if (!gameStates[roomName]) {
       gameStates[roomName] = createNewGame();
     }
     socket.emit("init");
   }
   function handleJoinGame(roomName) {
-    // socket.emit("gameCode", roomName);
     let roomSize = 0;
     try {
       roomSize = io.sockets.adapter.rooms.get(roomName).size;
@@ -91,8 +97,7 @@ function connected(socket) {
 
     clientRooms[socket.id] = roomName;
     socket.join(roomName);
-    // socket.number = 2;
-    // console.log(gameStates[roomName].running);
+
     io.in(roomName).emit("message", {
       sender: "playerConnection",
       msg: "New Player Joined!",
@@ -100,34 +105,30 @@ function connected(socket) {
     socket.emit("gameCode", roomName);
     socket.emit("init");
     gameStates[roomName].running = true;
-
-    // running = true;
   }
   function handleCellClicked(cellIndex) {
-    // console.log(cellIndex);
-    let roomName = clientRooms[socket.id];
-    console.log(gameStates[roomName].running);
-    if (
-      gameStates[roomName].options[cellIndex] != "" ||
-      !gameStates[roomName].running
-    ) {
-      return;
+    try {
+      let roomName = clientRooms[socket.id];
+      console.log(gameStates[roomName].running);
+      if (
+        gameStates[roomName].options[cellIndex] != "" ||
+        !gameStates[roomName].running
+      ) {
+        return;
+      }
+      updateCell(cellIndex);
+      checkWinner(gameStates[roomName].options);
+    } catch (e) {
+      console.log(e);
     }
-
-    updateCell(cellIndex);
-    checkWinner(gameStates[roomName].options);
   }
   function handleRestartGame() {
     let roomName = clientRooms[socket.id];
-
-    // if (gameStates[roomName].running) {
-    //   socket.emit("stillRunning");
-    //   return;
-    // }
-
     gameStates[roomName].options = ["", "", "", "", "", "", "", "", ""];
     gameStates[roomName].currentPlayer = "X";
-    gameStates[roomName].running = true;
+    if (io.sockets.adapter.rooms.get(roomName).size === 1) {
+      gameStates[roomName].running = false;
+    } else gameStates[roomName].running = true;
     io.in(roomName).emit("gameRestarted", {
       options: gameStates[roomName].options,
       currentPlayer: gameStates[roomName].currentPlayer,
@@ -138,11 +139,11 @@ function connected(socket) {
 
     let roomName = clientRooms[socket.id];
     gameStates[roomName].options[index] = gameStates[roomName].currentPlayer;
-    console.log(gameStates);
+    // console.log(gameStates);
     console.log(clientRooms);
     // console.log(index);
     gameStates[roomName].playerTurn = false;
-    console.log("rooM", roomName);
+    // console.log("rooM", roomName);
 
     //?RESPONSIBLE FOR CHANGING PLAYER
     socket.emit("drawXorO", {
@@ -190,6 +191,8 @@ function connected(socket) {
         "gameOver",
         gameStates[roomName].currentPlayer + " Won!"
       );
+      socket.emit("gameOver", "You Won!");
+      socket.broadcast.to(roomName).emit("gameOver", "You Lose!");
       gameStates[roomName].running = false;
     } else if (!options.includes("")) {
       io.in(roomName).emit("gameOver", "Draw!");
@@ -202,10 +205,13 @@ function connected(socket) {
     let roomName = clientRooms[socket.id];
     gameStates[roomName].currentPlayer =
       gameStates[roomName].currentPlayer == "X" ? "O" : "X";
-    io.in(roomName).emit(
-      "changePlayer",
-      gameStates[roomName].currentPlayer + "'s turn"
-    );
+    socket.emit("changePlayer", {
+      currentPlayer: `Opponent's turn(${gameStates[roomName].currentPlayer})`,
+      color: "red",
+    });
+    socket.broadcast
+      .to(roomName)
+      .emit("changePlayer", { currentPlayer: "Your turn", color: "blue" });
   }
 }
 function createNewGame() {

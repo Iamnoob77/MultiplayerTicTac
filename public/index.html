@@ -22,10 +22,14 @@
     />
   </head>
   <body class="h-100">
-    <div class="d-flex justify-content-around align-items-center mt-4 h-10">
+    <!-- NAVBAR -->
+    <div
+      class="d-flex justify-content-around align-items-center mt-4 h-10 border border-primary"
+    >
       <i class="bi bi-brightness-high-fill" id="toggleDark"></i>
       <h2 id="playerNumber">Total Players: 1</h2>
     </div>
+    <!-- INITIALSCREEN -->
     <div id="initialScreen">
       <div
         class="d-flex flex-column align-items-center justify-content-center h-100"
@@ -66,7 +70,7 @@
             <div cellIndex="7" class="cell"></div>
             <div cellIndex="8" class="cell"></div>
           </div>
-          <h2 id="statusText"></h2>
+          <h2 id="statusText">You will be "X" if you move</h2>
           <!-- <button id="restartBtn" class="btn btn-primary">Restart</button> -->
         </div>
         <h4><span id="gameCodeDisplay"></span></h4>

@@ -97,7 +97,10 @@ function cellClicked() {
 }
 
 function restartGame() {
-  // socket.emit("restartGame", roomName);
+  statusText.style.fontSize = "1.5rem";
+  statusText.style.color = "black";
+  statusText.innerHTML = 'You will be "X" if you move';
+  socket.emit("restartGame", roomName);
 }
 function handleGameRestarted(data) {
   console.log("restarted", data);
@@ -140,8 +143,10 @@ function handleDrawXorO(data) {
   }
   console.log(data.playerTurn);
 }
-function handleChangePlayer(currentPlayer) {
-  statusText.textContent = `${currentPlayer}`;
+function handleChangePlayer(data) {
+  statusText.style.fontSize = "2.5rem";
+  statusText.style.color = `${data.color}`;
+  statusText.textContent = `${data.currentPlayer}`;
 }
 function handlePlayerCount(playNum) {
   playerN.textContent = `Total Players: ${playNum}`;
@@ -183,6 +188,7 @@ function outputMessage(data) {
       spanMessage.style.color = "green";
     } else {
       handlePlayerCount(1);
+      restartGame();
       spanMessage.style.color = "red";
     }
     spanMessage.style.fontStyle = "italic";
@@ -199,6 +205,7 @@ function outputMessage(data) {
 function showGameOverAlert(message) {
   const alertMessage = document.getElementById("gameOverMessage");
   const overlay = document.getElementById("overlay");
+  alertMessage.style.color = "green";
   alertMessage.innerText = message;
   alert.style.display = "block";
   alert.classList.add("animate__animated", "animate__backInDown");
