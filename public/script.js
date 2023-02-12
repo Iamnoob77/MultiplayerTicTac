@@ -6,18 +6,20 @@ const initialScreen = document.getElementById("initialScreen");
 const newGameBtn = document.getElementById("newGameButton");
 const joinGameBtn = document.getElementById("joinGameButton");
 const gameCodeInput = document.getElementById("gameCodeInput");
+const joinRamdomRoomBtn = document.getElementById("joinRandomRoomButton");
 const gameCodeDisplay = document.getElementById("gameCodeDisplay");
 const playerN = document.getElementById("playerNumber");
 const cells = document.querySelectorAll(".cell");
 const statusText = document.querySelector("#statusText");
-// const restartBtn = document.querySelector("#restartBtn");
+const game = document.getElementById("game");
 
 const chatForm = document.getElementById("chat-form");
 const inputMessage = document.querySelector("#inputMessage");
 const sendBtn = document.getElementById("sendBtn");
 const chatMessages = document.getElementById("chat-messages");
 
-const alert = document.getElementById("customAlert");
+const gameOverAlert = document.getElementById("customAlert");
+const showTime = document.getElementById("showTime");
 const restartBtn = document.getElementById("restartBtn");
 
 //* END :- GETTING HTML CONTENT
@@ -40,6 +42,7 @@ socket.on("message", handleMessage);
 //* START :- LISTENERS
 newGameBtn.addEventListener("click", newGame);
 joinGameBtn.addEventListener("click", joinGame);
+joinRamdomRoomBtn.addEventListener("click", joinRandomRoom);
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const msg = inputMessage.value.trim();
@@ -59,6 +62,7 @@ chatForm.addEventListener("submit", (e) => {
 
 let playerTurn = true;
 let roomName;
+// let gameOverTimeInterval;
 
 //?-------------END OF GAME DECLARATION----------
 
@@ -78,6 +82,10 @@ function joinGame() {
   }
   console.log(socket.id);
 }
+function joinRandomRoom() {
+  socket.emit("joinRandomRoom");
+}
+
 let playerNumber;
 function initializeGame() {
   initialScreen.style.display = "none";
@@ -103,7 +111,6 @@ function restartGame() {
   socket.emit("restartGame", roomName);
 }
 function handleGameRestarted(data) {
-  console.log("restarted", data);
   for (let i = 0; i < data.options.length; i++) {
     cells[i].textContent = data.options[i];
   }
@@ -112,8 +119,7 @@ function handleGameRestarted(data) {
 }
 
 function handleStillRunning() {
-  console.log("permission");
-  alert("Game is still Running");
+  alert("Game Is Still Running");
 }
 //* END :- GAME LOGIC
 
@@ -127,7 +133,7 @@ function handleGameCode(gameCode) {
   gameCodeDisplay.innerText = `room name: ${gameCode}`;
 }
 function handleUnknownCode() {
-  alert("Unknown code");
+  alert("Unknown code :(");
   // restartGame();
   return;
 }
@@ -147,6 +153,9 @@ function handleChangePlayer(data) {
   statusText.style.fontSize = "2.5rem";
   statusText.style.color = `${data.color}`;
   statusText.textContent = `${data.currentPlayer}`;
+  cells.forEach((cell) => {
+    cell.style.cursor = `url(${data.cursor}), auto`;
+  });
 }
 function handlePlayerCount(playNum) {
   playerN.textContent = `Total Players: ${playNum}`;
@@ -200,19 +209,39 @@ function outputMessage(data) {
 
   chatMessages.appendChild(div);
 }
-
+function leaveGame() {
+  socket.emit("leaveGAme");
+  window.location.reload();
+}
 // POP UP
 function showGameOverAlert(message) {
   const alertMessage = document.getElementById("gameOverMessage");
   const overlay = document.getElementById("overlay");
   alertMessage.style.color = "green";
   alertMessage.innerText = message;
-  alert.style.display = "block";
-  alert.classList.add("animate__animated", "animate__backInDown");
+  gameOverAlert.style.display = "block";
+  gameOverAlert.classList.add("animate__animated", "animate__backInDown");
   overlay.style.display = "block";
+  let gameOverSpentTime = 0;
+  let gameOverTimeInterval = setInterval(showTimeFunc, 1000);
+
+  function showTimeFunc() {
+    console.log(gameOverTimeInterval);
+    gameOverSpentTime++;
+    // console.log("g", gameOverSpentTime);
+    showTime.innerHTML = gameOverSpentTime;
+    if (gameOverSpentTime > 15) {
+      gameOverSpentTime = 0;
+      clearInterval(gameOverTimeInterval);
+      leaveGame(); //TODO
+    }
+  }
+
+  restartBtn.addEventListener("click", () => {
+    gameOverAlert.style.display = "none";
+    overlay.style.display = "none";
+    clearInterval(gameOverTimeInterval);
+    gameOverSpentTime = 0;
+    restartGame();
+  });
 }
-restartBtn.addEventListener("click", () => {
-  alert.style.display = "none";
-  overlay.style.display = "none";
-  restartGame();
-});

@@ -3,7 +3,6 @@ const socket = require("socket.io");
 const makeid = require("./utils");
 const http = require("http");
 const { Server } = require("socket.io");
-const { copyFileSync } = require("fs");
 
 //* APP SETUP
 const app = express();
@@ -45,8 +44,9 @@ function connected(socket) {
   socket.on("cellClicked", handleCellClicked);
   socket.on("newGame", handleNewGame);
   socket.on("joinGame", handleJoinGame);
+  socket.on("joinRandomRoom", handleJoinRandomRoom);
   socket.on("restartGame", handleRestartGame);
-
+  socket.on("leaveGame", handleDisconnect);
   socket.on("chatMessage", handleChatMessage);
 
   function handleDisconnect() {
@@ -71,7 +71,6 @@ function connected(socket) {
     clientRooms[socket.id] = roomName;
     socket.emit("gameCode", roomName); //send game code to client
     socket.join(roomName);
-
     if (!gameStates[roomName]) {
       gameStates[roomName] = createNewGame();
     }
@@ -106,6 +105,17 @@ function connected(socket) {
     socket.emit("init");
     gameStates[roomName].running = true;
   }
+  function handleJoinRandomRoom() {
+    const rooms = [...io.sockets.adapter.rooms.keys()];
+    console.log(rooms);
+    let oneSocketRooms = rooms.filter(function (room) {
+      return io.sockets.adapter.rooms.get(room).size === 1 && room.length === 5;
+    });
+    let randomRoomName =
+      oneSocketRooms[Math.floor(Math.random() * oneSocketRooms.length)];
+    console.log(randomRoomName);
+    handleJoinGame(randomRoomName);
+  }
   function handleCellClicked(cellIndex) {
     try {
       let roomName = clientRooms[socket.id];
@@ -123,16 +133,20 @@ function connected(socket) {
     }
   }
   function handleRestartGame() {
-    let roomName = clientRooms[socket.id];
-    gameStates[roomName].options = ["", "", "", "", "", "", "", "", ""];
-    gameStates[roomName].currentPlayer = "X";
-    if (io.sockets.adapter.rooms.get(roomName).size === 1) {
-      gameStates[roomName].running = false;
-    } else gameStates[roomName].running = true;
-    io.in(roomName).emit("gameRestarted", {
-      options: gameStates[roomName].options,
-      currentPlayer: gameStates[roomName].currentPlayer,
-    });
+    try {
+      let roomName = clientRooms[socket.id];
+      gameStates[roomName].options = ["", "", "", "", "", "", "", "", ""];
+      gameStates[roomName].currentPlayer = "X";
+      if (io.sockets.adapter.rooms.get(roomName).size === 1) {
+        gameStates[roomName].running = false;
+      } else gameStates[roomName].running = true;
+      io.in(roomName).emit("gameRestarted", {
+        options: gameStates[roomName].options,
+        currentPlayer: gameStates[roomName].currentPlayer,
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }
   function updateCell(index) {
     console.log("updateCell");
@@ -187,10 +201,6 @@ function connected(socket) {
       }
     }
     if (roundWon) {
-      io.in(roomName).emit(
-        "gameOver",
-        gameStates[roomName].currentPlayer + " Won!"
-      );
       socket.emit("gameOver", "You Won!");
       socket.broadcast.to(roomName).emit("gameOver", "You Lose!");
       gameStates[roomName].running = false;
@@ -208,10 +218,13 @@ function connected(socket) {
     socket.emit("changePlayer", {
       currentPlayer: `Opponent's turn(${gameStates[roomName].currentPlayer})`,
       color: "red",
+      cursor: "disabled.png",
     });
-    socket.broadcast
-      .to(roomName)
-      .emit("changePlayer", { currentPlayer: "Your turn", color: "blue" });
+    socket.broadcast.to(roomName).emit("changePlayer", {
+      currentPlayer: "Your turn",
+      color: "blue",
+      cursor: `${gameStates[roomName].currentPlayer}.png`,
+    });
   }
 }
 function createNewGame() {
