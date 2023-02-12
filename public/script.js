@@ -21,7 +21,7 @@ const chatMessages = document.getElementById("chat-messages");
 const gameOverAlert = document.getElementById("customAlert");
 const showTime = document.getElementById("showTime");
 const restartBtn = document.getElementById("restartBtn");
-
+const leaveBtn = document.getElementById("leaveBtn");
 //* END :- GETTING HTML CONTENT
 
 //* START :- SOCKETS
@@ -42,6 +42,9 @@ socket.on("message", handleMessage);
 //* START :- LISTENERS
 newGameBtn.addEventListener("click", newGame);
 joinGameBtn.addEventListener("click", joinGame);
+leaveBtn.addEventListener("click", () => {
+  leaveGame();
+});
 joinRamdomRoomBtn.addEventListener("click", joinRandomRoom);
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
