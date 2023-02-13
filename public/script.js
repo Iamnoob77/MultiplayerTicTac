@@ -137,12 +137,10 @@ function handleGameCode(gameCode) {
 }
 function handleUnknownCode() {
   alert("Unknown code :(");
-  // restartGame();
   return;
 }
 function handleTooManyPlayers() {
   alert("This game is already in progress");
-  // restartGame();
 }
 function handleDrawXorO(data) {
   playerTurn = data.playerTurn;
