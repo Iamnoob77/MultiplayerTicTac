@@ -74,17 +74,17 @@ let roomName;
 function newGame() {
   socket.emit("newGame");
   // initializeGame();
-  console.log("h", socket.id);
+  // console.log("h", socket.id);
 }
 function joinGame() {
   const code = gameCodeInput.value;
-  console.log(code);
+  // console.log(code);
   if (code !== "") {
     socket.emit("joinGame", code);
   } else {
     alert("Please Enter Game Code");
   }
-  console.log(socket.id);
+  // console.log(socket.id);
 }
 function joinRandomRoom() {
   socket.emit("joinRandomRoom");
@@ -101,10 +101,10 @@ function initializeGame() {
   // restartBtn.addEventListener("click", restartGame);
 }
 function cellClicked() {
-  console.log(socket.id);
+  // console.log(socket.id);
   const cellIndex = this.getAttribute("cellIndex");
 
-  console.log(cellIndex);
+  // console.log(cellIndex);
   if (playerTurn) socket.emit("cellClicked", cellIndex);
 }
 
@@ -152,7 +152,7 @@ function handleDrawXorO(data) {
   for (let i = 0; i < data.options.length; i++) {
     cells[i].textContent = data.options[i];
   }
-  console.log(data.playerTurn);
+  // console.log(data.playerTurn);
 }
 function handleChangePlayer(data) {
   statusText.style.fontSize = "2.5rem";
@@ -167,7 +167,7 @@ function handlePlayerCount(playNum) {
 }
 //message from server
 function handleMessage(data) {
-  console.log(data);
+  // console.log(data);
   outputMessage(data);
   //scroll down
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -231,7 +231,7 @@ function showGameOverAlert(message) {
   let gameOverTimeInterval = setInterval(showTimeFunc, 1000);
 
   function showTimeFunc() {
-    console.log(gameOverTimeInterval);
+    // console.log(gameOverTimeInterval);
     gameOverSpentTime++;
     // console.log("g", gameOverSpentTime);
     showTime.innerHTML = gameOverSpentTime;

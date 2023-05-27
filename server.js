@@ -38,7 +38,7 @@ io.on("connection", connected);
 
 //* START :- NETWORKING
 function connected(socket) {
-  console.log("Client Connected with id ", socket.id);
+  // console.log("Client Connected with id ", socket.id);
   socket.on("disconnect", handleDisconnect);
 
   socket.on("cellClicked", handleCellClicked);
@@ -106,13 +106,13 @@ function connected(socket) {
   }
   function handleJoinRandomRoom() {
     const rooms = [...io.sockets.adapter.rooms.keys()];
-    console.log(rooms);
+    // console.log(rooms);
     let oneSocketRooms = rooms.filter(function (room) {
       return io.sockets.adapter.rooms.get(room).size === 1 && room.length === 5;
     });
     let randomRoomName =
       oneSocketRooms[Math.floor(Math.random() * oneSocketRooms.length)];
-    console.log(randomRoomName);
+    // console.log(randomRoomName);
     if (!randomRoomName) {
       socket.emit("noRooms");
       return;
@@ -122,7 +122,7 @@ function connected(socket) {
   function handleCellClicked(cellIndex) {
     try {
       let roomName = clientRooms[socket.id];
-      console.log(gameStates[roomName].running);
+      // console.log(gameStates[roomName].running);
       if (
         gameStates[roomName].options[cellIndex] != "" ||
         !gameStates[roomName].running
@@ -152,7 +152,7 @@ function connected(socket) {
     }
   }
   function updateCell(index) {
-    console.log("updateCell");
+    // console.log("updateCell");
 
     let roomName = clientRooms[socket.id];
     gameStates[roomName].options[index] = gameStates[roomName].currentPlayer;
