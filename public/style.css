@@ -41,7 +41,6 @@ body {
   box-shadow: 0 0 0 2px;
   line-height: 100px;
   font-size: 65px;
-  /* cursor: url("X.png"), auto; */
   text-align: center;
   padding: 10px;
 }
@@ -61,7 +60,6 @@ body {
 }
 #initialScreen > p {
   margin-top: 5px;
-  /* margin-bottom: 0px; */
   font-size: 1.2rem;
 }
 #initialScreen > h1 {
@@ -94,7 +92,6 @@ body {
 }
 #gameContainer {
   font-family: "Permanent Marker", cursive;
-  /* border: 1px solid red; */
   margin-left: 30px;
   width: 50%;
   height: 100%;
@@ -106,7 +103,6 @@ body {
   justify-content: space-around;
   align-items: center;
   height: 10%;
-  /* border: 2px solid red; */
 }
 #playerNumber {
   display: none;
@@ -115,8 +111,6 @@ body {
   display: grid;
   grid-template-columns: repeat(3, auto);
   width: auto;
-  /* border: 2px solid red; */
-  /* margin: auto; */
 }
 #statusText {
   margin-top: 16px;
@@ -128,7 +122,6 @@ CHAT SECTION
 #gameAndMessage {
   display: none;
   justify-content: space-between;
-  /* border: 3px solid red; */
   position: relative;
   padding: 1.5rem;
   height: 75%;
@@ -138,7 +131,6 @@ CHAT SECTION
   width: 35%;
   border-radius: 4px;
   position: relative;
-  /* background-color: rgb(211, 217, 217); */
 }
 #chat-messages {
   width: 100%;

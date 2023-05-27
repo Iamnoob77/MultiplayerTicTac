@@ -48,7 +48,6 @@ function connected(socket) {
   socket.on("restartGame", handleRestartGame);
   socket.on("leaveGame", handleDisconnect);
   socket.on("chatMessage", handleChatMessage);
-
   function handleDisconnect() {
     let roomName = clientRooms[socket.id];
     let room = io.sockets.adapter.rooms.get(roomName);
@@ -99,7 +98,7 @@ function connected(socket) {
 
     io.in(roomName).emit("message", {
       sender: "playerConnection",
-      msg: "New Player Joined!",
+      msg: "Player Joined!",
     });
     socket.emit("gameCode", roomName);
     socket.emit("init");
@@ -114,6 +113,10 @@ function connected(socket) {
     let randomRoomName =
       oneSocketRooms[Math.floor(Math.random() * oneSocketRooms.length)];
     console.log(randomRoomName);
+    if (!randomRoomName) {
+      socket.emit("noRooms");
+      return;
+    }
     handleJoinGame(randomRoomName);
   }
   function handleCellClicked(cellIndex) {

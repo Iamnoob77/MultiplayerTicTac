@@ -35,6 +35,7 @@ socket.on("changePlayer", handleChangePlayer);
 socket.on("gameRestarted", handleGameRestarted);
 socket.on("stillRunning", handleStillRunning);
 socket.on("gameOver", handleGameOver);
+socket.on("noRooms", handleNoRooms);
 //message from server
 socket.on("message", handleMessage);
 //* END :- SOCKETS
@@ -124,6 +125,9 @@ function handleGameRestarted(data) {
 function handleStillRunning() {
   alert("Game Is Still Running");
 }
+function handleNoRooms() {
+  alert("No Rooms Available");
+}
 //* END :- GAME LOGIC
 
 //*NETWORKING
@@ -193,7 +197,7 @@ function outputMessage(data) {
     spanName.style.color = "orange";
   } else if (data.sender === "playerConnection") {
     spanName.innerText = "Server: ";
-    if (data.msg === "New Player Joined!") {
+    if (data.msg === "Player Joined!") {
       handlePlayerCount(2);
       spanMessage.style.color = "green";
     } else {
@@ -234,7 +238,7 @@ function showGameOverAlert(message) {
     if (gameOverSpentTime > 15) {
       gameOverSpentTime = 0;
       clearInterval(gameOverTimeInterval);
-      leaveGame(); //TODO
+      leaveGame();
     }
   }
 
