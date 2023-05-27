@@ -239,6 +239,6 @@ function createNewGame() {
   };
 }
 //*LISTEN TO PORT 5000
-server.listen(5000, () => {
+server.listen("multiplayer-tic-tac.vercel.app", () => {
   console.log("Listening on port 5000");
 });
