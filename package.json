@@ -19,7 +19,6 @@
   "homepage": "https://github.com/Iamnoob77/MultiplayerTicTac#readme",
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.5.4",
-    "vercel": "^30.0.0"
+    "socket.io": "^4.5.4"
   }
 }
